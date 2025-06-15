@@ -132,9 +132,9 @@ public class RandomGearCommand {
         String gearType = pickRandomGearType();
         String rarity = MpiConfig.pickRarityWeighted(RANDOM, tableId);
 
-        // mine_and_slash give gear <player> <level> <gearType> <rarity> 1
-        String giveCmd = String.format("mine_and_slash give gear %s %d %s %s 1",
-                playerName, playerLevel, gearType, rarity);
+        // mine_and_slash give gear <player> <gearType> <level>  <rarity> 1
+        String giveCmd = String.format("mine_and_slash give gear %s %s %d %s 1",
+                playerName, gearType, playerLevel, rarity);
         ctx.getSource().getServer().getCommands().performPrefixedCommand(ctx.getSource(), giveCmd);
         return 1;
     }
