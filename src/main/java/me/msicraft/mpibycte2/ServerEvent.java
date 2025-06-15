@@ -1,6 +1,7 @@
 package me.msicraft.mpibycte2;
 
 import me.msicraft.mpibycte2.config.MpiConfig;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.server.level.ServerPlayer;
@@ -161,9 +162,9 @@ public class ServerEvent {
         Component itemName = recovered.getHoverName();
 
         if (added) {
-            Component message = Component.literal("내구도 1이 된 ")
+            Component message = Component.literal("내구도 1이 된 [")
                     .append(itemName)
-                    .append(" 이(가) 인벤토리로 회수되었습니다.")
+                    .append("] 이(가) 인벤토리로 회수되었습니다.")
                     .withStyle(style -> style.withHoverEvent(
                             new HoverEvent(HoverEvent.Action.SHOW_ITEM, new HoverEvent.ItemStackInfo(recovered))
                     ));
@@ -171,9 +172,9 @@ public class ServerEvent {
         } else {
             player.spawnAtLocation(recovered);
 
-            Component message = Component.literal("내구도 1이 된 ")
+            Component message = Component.literal("내구도 1이 된 [")
                     .append(itemName)
-                    .append(" 이(가) 바닥에 떨어졌습니다.")
+                    .append("] 이(가) 바닥에 떨어졌습니다.")
                     .withStyle(style -> style.withHoverEvent(
                             new HoverEvent(HoverEvent.Action.SHOW_ITEM, new HoverEvent.ItemStackInfo(recovered))
                     ));
@@ -182,6 +183,20 @@ public class ServerEvent {
     }
 
     private static void checkAndWarn(Player player, ItemStack stack, Map<Integer, Long> timestamps, double warningThreshold) {
+        if (!stack.isDamageableItem()) {
+            return;
+        }
+
+        CompoundTag tag = stack.getTag();
+        if (tag != null && tag.getBoolean("Recovered")) {
+            if (stack.getDamageValue() < stack.getMaxDamage() - 1) {
+                tag.remove("Recovered");
+                if (tag.isEmpty()) {
+                    stack.setTag(null);
+                }
+            }
+        }
+
         int max = stack.getMaxDamage();
         int damage = stack.getDamageValue();
         float ratio = (float) (max - damage) / max;
@@ -192,9 +207,9 @@ public class ServerEvent {
         long lastWarn = timestamps.getOrDefault(key, 0L);
         if (now - lastWarn >= COOLDOWN_MILLIS) {
             Component itemName = stack.getHoverName();
-            Component message = Component.literal("[내구도 경고] ")
+            Component message = Component.literal("[내구도 경고] -> [")
                     .append(itemName)
-                    .append(" 의 내구도가 " + (int)(warningThreshold*100) + "% 이하입니다.")
+                    .append("] 의 내구도가 " + (int)(warningThreshold*100) + "% 이하입니다.")
                     .withStyle(style -> style.withHoverEvent(
                             new HoverEvent(HoverEvent.Action.SHOW_ITEM, new HoverEvent.ItemStackInfo(stack))
                     ));
