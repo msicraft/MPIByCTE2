@@ -14,6 +14,7 @@ import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
@@ -49,6 +50,27 @@ public class RandomGearCommand {
                                                             ctx.getSource().sendSystemMessage(Component.literal(msg));
                                                             return 1;
                                                         })
+                                                        .then(Commands.argument("table", StringArgumentType.word())
+                                                                .executes(ctx -> {
+                                                                    String tableId = StringArgumentType.getString(ctx, "table");
+                                                                    if (!MpiConfig.getTableIds().contains(tableId)) {
+                                                                        ctx.getSource().sendFailure(Component.literal("존재하지 않는 테이블 ID입니다: " + tableId));
+                                                                        return 0;
+                                                                    }
+
+                                                                    Map<String, String> weights = MpiConfig.getRarityProbabilities(tableId);
+                                                                    ctx.getSource().sendSystemMessage(
+                                                                            Component.literal("테이블 '" + tableId + "'의 희귀도 설정:")
+                                                                    );
+                                                                    for (Map.Entry<String, String> entry : weights.entrySet()) {
+                                                                        ctx.getSource().sendSystemMessage(
+                                                                                Component.literal("- " + entry.getKey() + ": " + entry.getValue())
+                                                                        );
+                                                                    }
+
+                                                                    return 1;
+                                                                })
+                                                        )
                                                 )
                                                 .then(Commands.literal("add")
                                                         .then(Commands.argument("table", StringArgumentType.word())
@@ -110,14 +132,6 @@ public class RandomGearCommand {
                                                                 )
                                                         )
                                                 )
-                                        )
-                                        .then(Commands.literal("reload")
-                                                .executes(ctx -> {
-                                                    MpiConfig.reloadConfig();
-                                                    ctx.getSource().sendSystemMessage(
-                                                            Component.literal("랜덤 장비 가중치 설정을 파일에서 다시 로드했습니다."));
-                                                    return 1;
-                                                })
                                         )
                                 )
                         )

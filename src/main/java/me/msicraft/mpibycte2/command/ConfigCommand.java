@@ -15,6 +15,14 @@ public class ConfigCommand {
                 Commands.literal("mpi")
                         .requires(src -> src.hasPermission(2))
                         .then(Commands.literal("config")
+                                        .then(Commands.literal("reload")
+                                             .executes(ctx -> {
+                                                    MpiConfig.reloadConfig();
+                                                    ctx.getSource().sendSystemMessage(
+                                                            Component.literal("랜덤 장비 가중치 설정을 파일에서 다시 로드했습니다."));
+                                                    return 1;
+                                                })
+                                        )
                                         .then(Commands.literal("settings")
                                                 .then(Commands.literal("view")
                                                         .executes(ctx -> {
@@ -61,6 +69,7 @@ public class ConfigCommand {
                                                                 })
                                                         )
                                                 )
+
                                         )
                         )
         );

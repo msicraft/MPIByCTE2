@@ -104,7 +104,7 @@ public class MpiConfig {
                 buildCumulativeMap(tableId);
             }
             if (root.has("Settings") && root.get("Settings").isJsonObject()) {
-                JsonObject es = root.getAsJsonObject("EventSettings");
+                JsonObject es = root.getAsJsonObject("Settings");
                 // gearDamagePercent
                 if (es.has("gearDamagePercent") && es.get("gearDamagePercent").isJsonPrimitive()) {
                     try {
@@ -283,5 +283,20 @@ public class MpiConfig {
     public static void reloadConfig() {
         loadConfig();
     }
+
+    public static Map<String, String> getRarityProbabilities(String tableId) {
+        Map<String, Double> weights = rarityTables.get(tableId);
+        if (weights == null || weights.isEmpty()) return Map.of();
+
+        double total = weights.values().stream().mapToDouble(Double::doubleValue).sum();
+        Map<String, String> result = new LinkedHashMap<>();
+
+        for (Map.Entry<String, Double> entry : weights.entrySet()) {
+            double prob = (entry.getValue() / total) * 100.0;
+            result.put(entry.getKey(), String.format("weight=%.2f, prob=%.2f%%", entry.getValue(), prob));
+        }
+        return result;
+    }
+
 }
 
